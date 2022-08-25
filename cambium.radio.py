@@ -21,7 +21,7 @@ nuspw='{"username":"MyOtherUsername","password":"MyAwesomePasswordHere"}'
 """
 This file has two sets of credentials as an example and the loop below uses 
 the second if the first fails.  This is because there was speculation from my customer
-that the radios that some may have had one username vs the other
+that the radios may have had one username vs the other
 We account for that and document that in the csv output.
 
 Shaken, not stirred
