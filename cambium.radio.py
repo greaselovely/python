@@ -105,7 +105,7 @@ def main():
                     login = requests.post(url, data=nuspw, verify=False)
                 if login.status_code == 401:
                     user = "nada"
-                    f.write(f"-,{ip},,,,Inaccessible{user}\n")
+                    f.write(f"-,{ip},,,,Inaccessible\n")
                     continue
                 bearer = convert_to_json(login)['message']
             except ConnectionError as e:
