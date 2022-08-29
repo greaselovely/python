@@ -65,9 +65,84 @@ with open(input, 'r') as f:
 # do stuff and things
 def main():
     with open(output, 'w') as f:
-        f.write(f"Name,IP,Model,Serial,Version,Note\n")
+        f.write(f"Name,IP,Model,Serial,Version,Uptime (D H:M:s),Note\n")
         i = 1
         for ip in text:
+            print(f"[{i}] {ip}")
+            i += 1
+            """
+            Let's test the endpoint to make sure we can get to it
+            and that the endpoint is listening on the port we are 
+            expecting, if either test fails, move on to the next IP.
+            """
+            # PING and check if port is open!
+            if ping(ip) == 0:
+                if check_port(ip) == 0: # Can ping IP
+                    pass # and port is open, so go do stuff
+                else:
+                    f.write(f"-,{ip},,,,Unreachable\n")
+                    continue # nothing to do
+            else:
+                f.write(f"-,{ip},,,,Unreachable\n") # Cannot ping IP
+                continue # nothing to do
+
+
+            """
+            Login to the radio and retrieve the session 'key'
+            that we will pass to the url to get device info
+            We're going to ping it first, which is not reliable 
+            but neither is waiting on requests to time out and 
+            break the script
+            """
+            # Login and get API key
+            url = f"https://{ip}/local/userLogin"
+            try:
+                login = requests.post(url, data=auspw, verify=False)
+                user = json.loads(auspw)['username']
+                if login.status_code == 401:
+                    user = json.loads(nuspw)['username']
+                    login = requests.post(url, data=nuspw, verify=False)
+                if login.status_code == 401:
+                    user = "nada"
+                    f.write(f"-,{ip},,,,Inaccessible\n")
+                    continue
+                bearer = convert_to_json(login)['message']
+            except ConnectionError as e:
+                print(f"Something is broke", e)
+
+            
+
+            """
+            We take bearer, (the value of 'message' from the radio login, like an api key)
+            post it to the radio via header, and retrieve the data into 'devinfo'
+            data comes to us in bytes, we decode it, convert it to a dict using json 
+            and grab values from the keys in the dict
+            """
+            header = '{"Authorization" : "Bearer ' + bearer + '"}' # this was tricky to figure out, settled on a str and then convert it
+            header = json.loads(header) # convert to dict
+            url = f"https://{ip}/local/getDeviceInfo"          
+            json_data = ''
+            try:
+                devinfo = requests.post(url, headers=header, json=json_data, verify=False)
+            except ConnectionError as e:
+                print(f"Something is broke", e)
+            
+            devinfo = convert_to_json(devinfo)
+            
+            name = devinfo['name']
+            model = devinfo['model']
+            serial = devinfo['msn']
+            version = devinfo['swVer']
+            uptime_sec = devinfo['uptime']
+            uptime = str(datetime.timedelta(seconds = uptime_sec))
+            uptime = uptime.replace(',', '')
+            
+            # print(f"{name}\t{ip}\t{model}\t{serial}\t{version}")
+            f.write(f"{name},{ip},{model},{serial},'{version},{uptime},{user}\n")
+
+
+if __name__ == "__main__":
+    main()
             print(f"[{i}] {ip}")
             i += 1
             """
