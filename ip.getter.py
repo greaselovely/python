@@ -32,20 +32,17 @@ print(input)
 with open(input, 'r') as f:
     text = f.readlines()
 
-pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+# pattern = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+pattern = r'[0-9]+(?:\.[0-9]+){3}'
 
 first = []
 for line in text:
-   first.append(pattern.search(line))
+    ip = re.findall( pattern, line )
+    if ip:
+        for i in ip:
+            first.append(i)
 
-second = []
-for line in first:
-    try: # this is to avoid empty lines or extraneous shit
-        second.append(line[0])
-    except TypeError as e:
-        continue
-
-final = list(set(second))
+final = list(set(first))
 final.sort()
 
 with open(output, 'w') as w:
