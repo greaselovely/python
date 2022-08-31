@@ -11,6 +11,8 @@ Love you long time.
     - Giggly Bits
 """
 
+import sys # delete me after you do the variable shits below.
+sys.exit() # delete me after you do the variable shits below.
 
 #######
 path = "/my/path/of/where/stuff/lives/"
@@ -18,16 +20,9 @@ input_file = "raw.txt"
 output_file = "ip.txt"
 #######
 
-import sys # delete me after you do the variable shits above.
-sys.exit() # delete me after you do the variable shits above.
-
-
 dirname = os.path.dirname(path)
 input = os.path.join(path, input_file)
 output = os.path.join(path, output_file)
-
-
-print(input)
 
 with open(input, 'r') as f:
     text = f.readlines()
