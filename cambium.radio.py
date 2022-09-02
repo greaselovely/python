@@ -91,15 +91,12 @@ def main():
                 login = requests.post(url, data=auspw, verify=False)
                 user = json.loads(auspw)['username']
                 if login.status_code == 401:
-                    user = "nada"
                     f.write(f"-,{ip},,,,Inaccessible\n")
                     continue
                 bearer = convert_to_json(login)['message']
-            except ConnectionError as e:
-                print(f"Something is broke", e)
-
-            
-
+            except ConnectionError:
+                print(f"Something is broke")
+                
             """
             We take bearer, (the value of 'message' from the radio login, like an api key)
             post it to the radio via header, and retrieve the data into 'devinfo'
