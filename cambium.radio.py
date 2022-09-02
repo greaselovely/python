@@ -97,7 +97,7 @@ def main():
                 bearer = convert_to_json(login)['message']
             except ConnectionError:
                 print(f"Something is broke")
-                
+
             """
             We take bearer, (the value of 'message' from the radio login, like an api key)
             post it to the radio via header, and retrieve the data into 'devinfo'
@@ -110,23 +110,21 @@ def main():
             json_data = ''
             try:
                 devinfo = requests.post(url, headers=header, json=json_data, verify=False)
-            except ConnectionError as e:
-                print(f"Something is broke", e)
+                devinfo = convert_to_json(devinfo)
             
-            devinfo = convert_to_json(devinfo)
-            
-            name = devinfo['name']
-            model = devinfo['model']
-            serial = devinfo['msn']
-            version = devinfo['swVer']
-            uptime_sec = devinfo['uptime']
-            uptime = str(datetime.timedelta(seconds = uptime_sec))
-            uptime = uptime.replace(',', '')
-            
-            print(f"[{i}] {name}")
-            i += 1
-            f.write(f"{name},{ip},{model},{serial},'{version},{uptime},{user}\n")
-
+                name = devinfo['name']
+                model = devinfo['model']
+                serial = devinfo['msn']
+                version = devinfo['swVer']
+                uptime_sec = devinfo['uptime']
+                uptime = str(datetime.timedelta(seconds = uptime_sec))
+                uptime = uptime.replace(',', '')
+                
+                print(f"[{i}] {name}")
+                i += 1
+                f.write(f"{name},{ip},{model},{serial},'{version},{uptime},{user}\n")
+            except ConnectionError:
+                print(f"Something is broke")
 
 if __name__ == "__main__":
     main()
