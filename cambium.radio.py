@@ -91,6 +91,7 @@ def main():
                 login = requests.post(url, data=auspw, verify=False)
                 user = json.loads(auspw)['username']
                 if login.status_code == 401:
+                    name = "nada"
                     f.write(f"-,{ip},,,,Inaccessible\n")
                     continue
                 bearer = convert_to_json(login)['message']
