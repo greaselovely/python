@@ -22,7 +22,7 @@ input_file = "ip.txt"
 output_file = "CambiumReport.csv"
 # create a creds file that looks like this:
 # {"username":"admin","password":"MyRadPassword"}
-# or just enter that as cred = {"username":"admin","password":"MyRadPassword"}
+# or just enter that as auspw = {"username":"admin","password":"MyRadPassword"}
 # your call
 with open(path + "/creds", 'r') as cred:
     auspw=cred.read()
