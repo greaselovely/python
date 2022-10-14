@@ -19,20 +19,19 @@ path = "/my/path/of/where/stuff/lives/"
 input_file = "raw.txt"
 output_file = "ip.txt"
 #######
-
 dirname = os.path.dirname(path)
 input = os.path.join(path, input_file)
 output = os.path.join(path, output_file)
 
 with open(input, 'r') as f:
-    text = f.readlines()
+    text = f.read().splitlines()
 
-# pattern = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 pattern = r'[0-9]+(?:\.[0-9]+){3}'
 
 first = []
 for line in text:
-    ip = re.findall( pattern, line )
+    ip = re.findall(pattern, line) # creates a list of IPs
+    # print(ip)
     if ip:
         for i in ip:
             first.append(i)
@@ -40,9 +39,13 @@ for line in text:
 final = list(set(first))
 final.sort()
 
-with open(output, 'w') as w:
-    for ip in final:
-        if ip[:8] == "255.255.":
-            pass
-        else:
-            w.write(f"{ip}\n")
+if len(final) > 0:
+    with open(output, 'w') as w:
+        for ip in final:
+            if ip[-7:] == "255.255":
+                pass
+            elif ip[-4:] == ".0.0":
+                pass
+            else:
+                print(ip)
+                w.write(f"{ip}\n")
