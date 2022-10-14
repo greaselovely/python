@@ -43,9 +43,9 @@ if len(final) > 0:
     with open(output, 'w') as w:
         for ip in final:
             if ip[-7:] == "255.255":
-                pass
+                continue
             elif ip[-4:] == ".0.0":
-                pass
+                continue
             else:
                 print(ip)
                 w.write(f"{ip}\n")
