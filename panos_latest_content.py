@@ -120,8 +120,12 @@ def main():
 
         key = get_api_key(ip, username, password)
         get_sys_info(ip, key)
-        cuivl(ip, key)
 
+        cudl(ip, key) # Download the latest TP signatures
+        # cuivl(ip, key) # Install the latest TP signatures
+        
+        # There could be added some logic to check the last IP's job to see when it's done, but 
+        # when I wrote this I was in a hurry so I just comment / uncomment as needed and run it twice.
 
 
 if __name__ == "__main__":
