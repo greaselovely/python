@@ -83,7 +83,7 @@ def cudl(ip, key, port="443"):
     return
 
 def cuivl(ip, key, port="443"):
-    # request content upgrade download latest (cudl)
+    # request content upgrade install version latest (cuivl)
     apiaction="api/?&type=op&cmd="
     apixpath=""
     apielement="<request><content><upgrade><install><version>latest</version></install></upgrade></content></request>"
