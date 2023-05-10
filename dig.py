@@ -14,9 +14,10 @@ domains = ["google.com",
 "pickle.com"]
 
 for domain in domains:
-    command = f'dig +noall +short {domain}'.split()
+    command = f'dig +noall +short {domain}'.split()     # I hate writing list of the commands and it's prone to error, so I just split it.
     ip = subprocess.Popen(command, stdout=subprocess.PIPE)
-    ip, _ = ip.communicate()
-    ip = ip.decode().split()
-    print(f'{domain} -> {ip[0] if len(ip) > 1 else ip[-1]}')
+    ip, _ = ip.communicate()    # capture from stdout above
+    ip = ip.decode().split()    # convert from bytes
+    ip = ip[0] if len(ip) > 1 else ip[-1]   # I want the first ip in a list, otherwise the 'last' (for some reason it didn't like index 0 and so who cares)
+    print(f'{domain} -> {ip}')  # print that sh*t
 
