@@ -3,6 +3,7 @@ import requests
 import json
 import pandas as pd
 import random
+import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -20,6 +21,8 @@ if you don't update domains with your own list, we'll generate one for you.  Why
 domains = []
 ip_api_query = []
 
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
 
 def collect_ips():
     """
@@ -83,6 +86,7 @@ def print_geo_data():
 
 
 def main():
+    clear()
     collect_ips()
     get_geo()
     update_geo_data()
