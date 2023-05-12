@@ -40,10 +40,10 @@ def collect_ips():
 
 def domain_gen():
     url = "https://raw.githubusercontent.com/opendns/public-domain-lists/master/opendns-top-domains.txt"
-    domain_gen = requests.get(url, verify=False).text.split()
+    domains_from_opendns = requests.get(url, verify=False).text.split()
     i = 0
     while i < 10:
-        domains.append(random.choice(domain_gen))
+        domains.append(random.choice(domains_from_opendns))
         i += 1
 
 
