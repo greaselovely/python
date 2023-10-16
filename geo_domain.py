@@ -11,6 +11,13 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 """
+to do
+if the first line of the table has no ip resolution, the order of the table is not maintained
+it doesn't show the domain and ip first.
+"""
+
+
+"""
 With this you can resolve names on domains_list and we'll only return the first IP and provide geo-location.
 Uses ip-api.com which is a Free for non-commercial use, no API key required.
 if you don't have domains.txt in this parent dir, with your own list, we'll generate one for you.  Why?  Cuz.
@@ -141,9 +148,8 @@ def print_geo_data():
     df = pd.DataFrame.from_dict(geo_data)
     df = df.fillna('-')
     cols = df.columns.tolist()
-    # cols = [cols[5], cols[4], cols[2], cols[1], cols[0], cols[3]]   # re-order the columns for display
     cols = [cols[5], cols[4], cols[2], cols[1], cols[0], cols[3]]   # re-order the columns for display
-    print(cols)
+    # print(cols)
     df = df[cols]
     df = df.rename(columns={'domain': 'Domain', 'query': 'IP Address', 'city': 'City', 'regionName': 'Region/State', 'country': 'Country', 'timezone' : 'Time Zone'})
     print(tabulate.tabulate(df, showindex=False, headers=df))
@@ -151,12 +157,15 @@ def print_geo_data():
 
 
 def main():
-    # clear()
+    clear()
     open_file()
     collect_ips()
     get_geo()
     update_geo_data()
     print_geo_data()
+
+    with open(domains, 'w') as f:
+        pass
 
 if __name__ == '__main__':
     main()
