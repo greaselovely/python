@@ -34,7 +34,7 @@ def argue_with_me():
     """
     parser = argparse.ArgumentParser(description='Domain SSL Certificate Checking, showing CA and expiration')
     parser.add_argument('-d', '--demo', action='store_true', help='Generates a list of random domain names to show you results of those', required=False)
-    parser.add_argument('-c', '--count', type=int, help='Specify number of demo domains to generate, maximum of 10', rqeuired=True)
+    parser.add_argument('-c', '--count', type=int, help='Specify number of demo domains to generate, maximum of 10', required=True)
     parser.add_argument('-v', '--verbose', action='store_true', help='Provides detail output of the entire certificate', required=False)
     args = parser.parse_args()
     verbose = args.verbose
