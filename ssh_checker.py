@@ -24,8 +24,8 @@ def main(ip_filename):
     ips = read_ips(ip_filename)
     results = []
 
-    for i, ip in enumerate(ips):
-        print(f"{i}\t{ip}")
+    for i, ip in enumerate(ips, 1):
+        print(f"{i}.\t{ip}")
         algorithms = fetch_key_exchange_algorithms(ip)
         results.append((ip, algorithms))
 
