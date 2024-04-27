@@ -6,7 +6,7 @@ import io
 log_stream = io.StringIO()
 logging.basicConfig(stream=log_stream, level=logging.DEBUG)
 
-filename = "ips.txt"
+filename = "firewalls.txt"
 
 def parse_log_data(log_content):
     details = {

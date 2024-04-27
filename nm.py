@@ -23,6 +23,7 @@ content = response.text
 
 # Use regex to extract the JSON string assigned to the variable
 # This regex looks for the pattern: var availabelCitys = jQuery.parseJSON('...json here...');
+# And yes, available is misspelled.  Even dumber.
 pattern = r"var availabelCitys = jQuery\.parseJSON\('(\[.*?\])'\);"
 match = re.search(pattern, content, re.DOTALL)
 
