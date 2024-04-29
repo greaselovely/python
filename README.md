@@ -54,6 +54,11 @@ This Python script retrieves a JavaScript file from a specific URL related to th
 This Python script checks SSL certificates for specified domains and displays their expiration date, days remaining until expiration, and certificate authority. It also generates a list of random domain names for demonstration purposes if run in demo mode. The script reads domain names from a file or generates random ones if needed. It then establishes a connection to the domain, captures certificate information, and prints relevant details. The script can be run with command-line arguments to control its behavior.
 
 
+## ssh_checker.py
+
+This Python script utilizes the Paramiko library to establish SSH connections to a list of IP addresses specified in a text file (`devices.txt`). It logs detailed SSH session information to a file (`ssh_session.log`), capturing key exchange algorithms, server key types, encryption methods, MAC algorithms, and server signature algorithms. The results are parsed and displayed in a structured format on the console, presenting each IP address along with its respective SSH configuration details. This script is especially useful for diagnosing SSH connectivity issues, such as mismatched key exchange algorithms or unsupported server key types, by providing clear visibility into the SSH negotiation process.
+
+
 ## macos.fart
 
 This Python code decodes a base64-encoded string and is for MacOS users only.
