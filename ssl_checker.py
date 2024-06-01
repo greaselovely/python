@@ -1,6 +1,7 @@
 import ssl
 import socket
 import datetime
+import warnings
 import requests
 import pathlib
 import os
@@ -11,8 +12,10 @@ from colorama import Fore
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.utils import CryptographyDeprecationWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
 
 domain_file = 'domains.txt'
 opendns_file = 'opendns.txt'
