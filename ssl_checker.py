@@ -169,7 +169,7 @@ def domain_gen(count: int) -> None:
             d.write(domain + '\n')
 
 def main():
-    # clear()
+    clear()
     
     if len(argv) == 1:
         verbose, demo, count = False, False, 5
