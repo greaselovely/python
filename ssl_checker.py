@@ -153,7 +153,7 @@ def domain_gen(count: int) -> None:
             domains_from_opendns = od.read()
     else:
         url = "https://raw.githubusercontent.com/opendns/public-domain-lists/master/opendns-top-domains.txt"
-        domains_from_opendns = requests.get(url, verify='/Users/ssivley/Downloads/cert_trust-decrypt.crt').text
+        domains_from_opendns = requests.get(url, verify=False).text
         with open(opendns, 'w') as f:
             f.write(domains_from_opendns)
     
