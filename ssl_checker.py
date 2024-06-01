@@ -75,8 +75,11 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
         if tcp_port_responding(domain):
             try:
                 expiration_date, ca = get_certificate_info(domain, verbose)
-                days_remaining = (expiration_date - datetime.datetime.now()).days
-                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
+                if expiration_date and ca:
+                    days_remaining = (expiration_date - datetime.datetime.now()).days
+                    print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
+                else:
+                    print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}Failed to retrieve certificate information.{Fore.RESET}\n")
             except ssl.CertificateError as e:
                 print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
             except ssl.SSLError as e:
@@ -86,7 +89,7 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
             except socket.error as e:
                 print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
         else:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}The website is not responding on TCP/443.{Fore.RESET}\n")
+            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}The website is not responding on port 443. Please check the server or network settings.{Fore.RESET}\n")
 
 def get_certificate_info(domain: str, verbose: bool) -> tuple:
     """
@@ -150,7 +153,7 @@ def domain_gen(count: int) -> None:
             domains_from_opendns = od.read()
     else:
         url = "https://raw.githubusercontent.com/opendns/public-domain-lists/master/opendns-top-domains.txt"
-        domains_from_opendns = requests.get(url, verify=False).text
+        domains_from_opendns = requests.get(url, verify='/Users/ssivley/Downloads/cert_trust-decrypt.crt').text
         with open(opendns, 'w') as f:
             f.write(domains_from_opendns)
     
