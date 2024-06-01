@@ -89,7 +89,7 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
             except socket.error as e:
                 print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
         else:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}The website is not responding on  TCP/443.{Fore.RESET}\n")
+            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}The website is not responding on TCP/443.{Fore.RESET}\n")
 
 def get_certificate_info(domain: str, verbose: bool) -> tuple:
     """
