@@ -15,7 +15,7 @@ when running over the slightest bump.  I haven't been
 able to find anyone to change the speedo so for years
 I've been mentally accounting for the actual speed vs
 what the speedo displays.  I decided I needed / wanted to 
-udnerstand the math and thus wanted to create a table
+understand the math and thus wanted to create a table
 that would show a predictable (close enough) list to go open
 
 My lady helped with the math and we pooped this out.  Works well.
