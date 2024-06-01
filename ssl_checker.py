@@ -9,6 +9,8 @@ import argparse
 from sys import argv
 from colorama import Fore
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -18,7 +20,6 @@ lpath = pathlib.Path(__file__).parent
 domains = os.path.join(lpath, domain_file)
 opendns = os.path.join(lpath, opendns_file)
 domain_list = []
-
 
 def clear():
     """
@@ -77,8 +78,8 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
         domain = domain.strip() # CYA cleanup
         try:
             expiration_date, ca = get_certificate_info(domain, verbose)
-            days_remaining = expiration_date - datetime.datetime.now()
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining.days}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
+            days_remaining = (expiration_date - datetime.datetime.now()).days
+            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
         except ssl.CertificateError as e:
             print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
         except ssl.SSLError as e:
@@ -88,26 +89,91 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
         except socket.error as e:
             print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
 
-
-
 def get_certificate_info(domain: str, verbose: bool) -> tuple:
     """
-    This is used to make a connection out to the requested domain, 
+    This is used to make a connection out to the requested domain,
     captures the certificate info, expiration date and the CA.
-
+    
     Returns a tuple.
     """
-    ssl_date_fmt = r'%b %d %H:%M:%S %Y %Z'
     context = ssl.create_default_context()
+    context.options |= ssl.OP_LEGACY_SERVER_CONNECT  # Enable legacy renegotiation
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
     conn = context.wrap_socket(socket.socket(socket.AF_INET), server_hostname=domain)
     conn.settimeout(3.0)
-    conn.connect((domain, 443))
-    certificate = conn.getpeercert()
-    expiration_date = datetime.datetime.strptime(certificate['notAfter'], ssl_date_fmt)
-    ca = certificate['issuer'][-1][-1][-1]
-    if verbose: print(certificate, end="\n" * 2)
-    conn.close()
-    return expiration_date, ca
+    
+    try:
+        conn.connect((domain, 443))
+        der_cert = conn.getpeercert(True)
+        pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
+        
+        # Load the certificate using cryptography
+        cert = x509.load_pem_x509_certificate(pem_cert.encode(), default_backend())
+        
+        expiration_date = cert.not_valid_after
+        issuer = cert.issuer.rfc4514_string()
+
+        if verbose:
+            print("Certificate:", cert)
+            print("Expiration date:", expiration_date)
+            print("Issuer:", issuer)
+        
+    except (ssl.SSLError, ssl.CertificateError, ssl.SSLCertVerificationError) as ssl_error:
+        print(f"SSL error occurred: {ssl_error}")
+        return None, None
+    except socket.error as socket_error:
+        print(f"Socket error occurred: {socket_error}")
+        return None, None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None, None
+    finally:
+        conn.close()
+    
+    return expiration_date, issuer
+# def get_certificate_info(domain: str, verbose: bool) -> tuple:
+#     """
+#     This is used to make a connection out to the requested domain,
+#     captures the certificate info, expiration date and the CA.
+    
+#     Returns a tuple.
+#     """
+#     context = ssl.create_default_context()
+#     context.check_hostname = False
+#     context.verify_mode = ssl.CERT_NONE
+#     conn = context.wrap_socket(socket.socket(socket.AF_INET), server_hostname=domain)
+#     conn.settimeout(3.0)
+    
+#     try:
+#         conn.connect((domain, 443))
+#         der_cert = conn.getpeercert(True)
+#         pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
+        
+#         # Load the certificate using cryptography
+#         cert = x509.load_pem_x509_certificate(pem_cert.encode(), default_backend())
+        
+#         expiration_date = cert.not_valid_after
+#         issuer = cert.issuer.rfc4514_string()
+
+#         if verbose:
+#             print("Certificate:", cert)
+#             print("Expiration date:", expiration_date)
+#             print("Issuer:", issuer)
+        
+#     except (ssl.SSLError, ssl.CertificateError, ssl.SSLCertVerificationError) as ssl_error:
+#         print(f"SSL error occurred: {ssl_error}")
+#         return None, None
+#     except socket.error as socket_error:
+#         print(f"Socket error occurred: {socket_error}")
+#         return None, None
+#     except Exception as e:
+#         print(f"An unexpected error occurred: {e}")
+#         return None, None
+#     finally:
+#         conn.close()
+    
+#     return expiration_date, issuer
 
 def domain_gen(count: int) -> None:
     """
@@ -127,7 +193,7 @@ def domain_gen(count: int) -> None:
             domains_from_opendns = od.read()
     else:
         url = "https://raw.githubusercontent.com/opendns/public-domain-lists/master/opendns-top-domains.txt"
-        domains_from_opendns = requests.get(url, verify=False).text
+        domains_from_opendns = requests.get(url, verify='/Users/ssivley/Downloads/cert_trust-decrypt.crt').text
         with open(opendns, 'w') as f:
             f.write(domains_from_opendns)
     
