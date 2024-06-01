@@ -43,23 +43,19 @@ def argue_with_me():
     count = args.count
     return verbose, demo, count
 
+def tcp_port_responding(domain: str, port: int = 443, timeout: int = 3) -> bool:
+    """
+    Checks if the specified TCP port is responding.
+    """
+    try:
+        with socket.create_connection((domain, port), timeout):
+            return True
+    except (socket.timeout, socket.error):
+        return False
+
 def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
     """
-    this is doing a few extra things aside from checking ssl certs, it probably 
-    needs to be culled a little, but for now this checks to see if the domains.txt 
-    file exists, if there is anything in it, or otherwise creates it under demo mode.
-    Demo mode basically runs off to grab a large list of domains from github and 
-    finds n number of domains, stores them in a list, and then writes them to the file also
-
-    We make a call to get_certificate_info and display results of the cert, expiration date, 
-    number of days until it expires, and the cert authority.
-
-    This is very useful as a demonstration under ssl decryption to quickly show / validate 
-    which cert is used to encrypt the session.
-
-    Now, this point is important.  If ssl decryption is used, the cert in flight is modified to 
-    to the ssl decryption trusted certificate, however, what isn't modified is the expiration, 
-    so the expiration is the actual server certificate.
+    This function checks SSL certificates of domains.
     """
     global domain_list
     if not os.path.isfile(domains):
@@ -76,18 +72,21 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
 
     for domain in domain_list:
         domain = domain.strip() # CYA cleanup
-        try:
-            expiration_date, ca = get_certificate_info(domain, verbose)
-            days_remaining = (expiration_date - datetime.datetime.now()).days
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
-        except ssl.CertificateError as e:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
-        except ssl.SSLError as e:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
-        except socket.timeout as e:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
-        except socket.error as e:
-            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
+        if tcp_port_responding(domain):
+            try:
+                expiration_date, ca = get_certificate_info(domain, verbose)
+                days_remaining = (expiration_date - datetime.datetime.now()).days
+                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nExpiration Date: {expiration_date}\nDays Remaining: {days_remaining}\nCertificate Authority: {Fore.RED}{ca}{Fore.RESET}\n")
+            except ssl.CertificateError as e:
+                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
+            except ssl.SSLError as e:
+                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
+            except socket.timeout as e:
+                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
+            except socket.error as e:
+                print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\nError: {Fore.RED}{e}{Fore.RESET}\n")
+        else:
+            print(f"Domain: {Fore.GREEN}{domain}{Fore.RESET}\n{Fore.RED}The website is not responding on TCP/443.{Fore.RESET}\n")
 
 def get_certificate_info(domain: str, verbose: bool) -> tuple:
     """
@@ -132,48 +131,6 @@ def get_certificate_info(domain: str, verbose: bool) -> tuple:
         conn.close()
     
     return expiration_date, issuer
-# def get_certificate_info(domain: str, verbose: bool) -> tuple:
-#     """
-#     This is used to make a connection out to the requested domain,
-#     captures the certificate info, expiration date and the CA.
-    
-#     Returns a tuple.
-#     """
-#     context = ssl.create_default_context()
-#     context.check_hostname = False
-#     context.verify_mode = ssl.CERT_NONE
-#     conn = context.wrap_socket(socket.socket(socket.AF_INET), server_hostname=domain)
-#     conn.settimeout(3.0)
-    
-#     try:
-#         conn.connect((domain, 443))
-#         der_cert = conn.getpeercert(True)
-#         pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
-        
-#         # Load the certificate using cryptography
-#         cert = x509.load_pem_x509_certificate(pem_cert.encode(), default_backend())
-        
-#         expiration_date = cert.not_valid_after
-#         issuer = cert.issuer.rfc4514_string()
-
-#         if verbose:
-#             print("Certificate:", cert)
-#             print("Expiration date:", expiration_date)
-#             print("Issuer:", issuer)
-        
-#     except (ssl.SSLError, ssl.CertificateError, ssl.SSLCertVerificationError) as ssl_error:
-#         print(f"SSL error occurred: {ssl_error}")
-#         return None, None
-#     except socket.error as socket_error:
-#         print(f"Socket error occurred: {socket_error}")
-#         return None, None
-#     except Exception as e:
-#         print(f"An unexpected error occurred: {e}")
-#         return None, None
-#     finally:
-#         conn.close()
-    
-#     return expiration_date, issuer
 
 def domain_gen(count: int) -> None:
     """
