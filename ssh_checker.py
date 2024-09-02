@@ -55,8 +55,13 @@ def fetch_ssh_details(hostname, port=22):
         logger.removeHandler(handler)
 
 def read_ips(filename):
-    with open(filename, 'r') as file:
-        return [line.strip() for line in file if line.strip()]
+    try:
+        with open(filename, 'r') as file:
+            return [line.strip() for line in file if line.strip()]
+    except FileNotFoundError:
+        with open(filename, 'w') as file:
+            file.write("127.0.0.1")
+        return read_ips(filename)
 
 def main(ip_filename):
     ips = read_ips(ip_filename)
