@@ -1,5 +1,6 @@
 import re
 import os
+import argparse
 from datetime import datetime
 import ipaddress
 
@@ -50,9 +51,11 @@ def main():
     """
     Main function to process the input file and extract IP addresses.
     """
-    input_file = "raw.txt"
-    if not os.path.exists(input_file):
-        input_file = input("Enter the input file name: ")
+    parser = argparse.ArgumentParser(description="Extract IP addresses from a file.")
+    parser.add_argument("-f", "--file", required=True, help="Input file name")
+    args = parser.parse_args()
+
+    input_file = args.file
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     ipv4_output = f"ipv4_addresses_{timestamp}.txt"
