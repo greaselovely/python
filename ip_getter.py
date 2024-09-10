@@ -66,9 +66,10 @@ def main():
 
         sorted_ipv4 = sort_ip_addresses(ipv4_addresses)
         sorted_ipv6 = sort_ip_addresses(ipv6_addresses)
-
-        write_ips_to_file(sorted_ipv4, ipv4_output)
-        write_ips_to_file(sorted_ipv6, ipv6_output)
+        if sorted_ipv4:
+            write_ips_to_file(sorted_ipv4, ipv4_output)
+        if sorted_ipv6:
+            write_ips_to_file(sorted_ipv6, ipv6_output)
 
         print(f"\nFound {len(sorted_ipv4)} unique IPv4 addresses and {len(sorted_ipv6)} unique IPv6 addresses.")
 
