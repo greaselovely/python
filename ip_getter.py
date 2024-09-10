@@ -1,42 +1,81 @@
-import os
 import re
+import os
+from datetime import datetime
+import ipaddress
 
-"""
-I wrote this to take a text file full of whatever
-crap and extract all IPs out of it.
-Then it takes all IPs, condenses them down and sorts them.
-Writes them out to the output file.  I also avoid subnet masks at the bottom.
-"""
+def extract_ips(text):
+    """
+    Extract IPv4 and IPv6 addresses from the given text.
 
-path = os.path.curdir
-input_file = "raw.txt"
-output_file = "ip.txt"
-input = os.path.join(path, input_file)
-output = os.path.join(path, output_file)
+    Args:
+    text (str): The input text to search for IP addresses.
 
-with open(input, 'r') as f:
-    text = f.read().splitlines()
+    Returns:
+    tuple: Two lists containing found IPv4 and IPv6 addresses respectively.
+    """
+    ipv4_pattern = r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}'
+    ipv6_pattern = r'(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))'
+    
+    ipv4_addresses = re.findall(ipv4_pattern, text)
+    ipv6_addresses = re.findall(ipv6_pattern, text)
+    
+    return ipv4_addresses, ipv6_addresses
 
-pattern = r'[0-9]+(?:\.[0-9]+){3}'
+def sort_ip_addresses(ip_list):
+    """
+    Sort IP addresses and remove duplicates.
 
-first = []
-for line in text:
-    ip = re.findall(pattern, line) # creates a list of IPs
-    # print(ip)
-    if ip:
-        for i in ip:
-            first.append(i)
+    Args:
+    ip_list (list): A list of IP addresses as strings.
 
-final = list(set(first))
-final.sort()
+    Returns:
+    list: A sorted list of unique IP addresses.
+    """
+    return sorted(set(ip_list), key=lambda ip: ipaddress.ip_address(ip))
 
-if len(final) > 0:
-    with open(output, 'w') as w:
-        for ip in final:
-            if ip[-7:] == "255.255":
-                continue
-            elif ip[-4:] == ".0.0":
-                continue
-            else:
-                print(ip)
-                w.write(f"{ip}\n")
+def write_ips_to_file(ips, filename):
+    """
+    Write IP addresses to a file, one per line.
+
+    Args:
+    ips (list): A list of IP addresses to write.
+    filename (str): The name of the file to write to.
+    """
+    with open(filename, 'w') as f:
+        for ip in ips:
+            f.write(f"{ip}\n")
+    print(f"IPs saved to: {filename}")
+
+def main():
+    """
+    Main function to process the input file and extract IP addresses.
+    """
+    input_file = "raw.txt"
+    if not os.path.exists(input_file):
+        input_file = input("Enter the input file name: ")
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ipv4_output = f"ipv4_addresses_{timestamp}.txt"
+    ipv6_output = f"ipv6_addresses_{timestamp}.txt"
+
+    try:
+        with open(input_file, 'r') as f:
+            text = f.read()
+
+        ipv4_addresses, ipv6_addresses = extract_ips(text)
+
+        sorted_ipv4 = sort_ip_addresses(ipv4_addresses)
+        sorted_ipv6 = sort_ip_addresses(ipv6_addresses)
+
+        write_ips_to_file(sorted_ipv4, ipv4_output)
+        write_ips_to_file(sorted_ipv6, ipv6_output)
+
+        print(f"\nFound {len(sorted_ipv4)} unique IPv4 addresses and {len(sorted_ipv6)} unique IPv6 addresses.")
+
+    except FileNotFoundError:
+        print(f"Error: The file '{input_file}' was not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    main()
