@@ -165,43 +165,24 @@ def get_url_category(url):
             response = requests.get(api_url, verify=False, timeout=10)
             response.raise_for_status()
             
-            # Parse XML response using xmltodict
             xml_dict = xmltodict.parse(response.text)
-            
-            # Extract result from the parsed dictionary
             result = xml_dict.get('response', {}).get('result')
             
             if result:
-                # Split the result string
                 parts = result.split()
+                seconds_index = parts.index("seconds")
+                domain_index = seconds_index + 1
+                category_start = domain_index + 1
+                cloud_db_index = parts.index("(Cloud")
                 
-                # Find the index of the domain name
-                domain_index = parts.index(url.split('://')[1]) if '://' in url else parts.index(url)
-                
-                # Extract category and risk
-                category_risk = ' '.join(parts[domain_index + 1:])
-                category_risk_parts = category_risk.split()
-                
-                # Initialize category and risk
-                category = "Unknown"
-                risk = "Unknown"
-                
-                # Extract category (which may contain hyphens)
-                for i, part in enumerate(category_risk_parts):
-                    if part.lower() in ['low-risk', 'medium-risk', 'high-risk', 'unknown']:
-                        category = ' '.join(category_risk_parts[:i])
-                        risk = part
-                        break
+                category = " ".join(parts[category_start:cloud_db_index - 1])
+                risk = parts[cloud_db_index - 1]
                 
                 return category, risk
             else:
-                print(f"No result found in the response for {url}")
-        except requests.RequestException as e:
-            print(f"Request error for {url}: {e}")
-        except xmltodict.expat.ExpatError as e:
-            print(f"XML parsing error for {url}: {e}")
+                return None, None
         except Exception as e:
-            print(f"Failed to get URL category for {url}: {e}")
+            return None, None
     return None, None
 
 def get_certificate_info(domain: str, verbose: bool) -> tuple:
