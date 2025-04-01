@@ -3,6 +3,10 @@ import os
 import requests
 import json
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+
 """
 While farting around collecting data via the NM Sec of State Biz Search
 I found a javascript that contained an absurd payload in it with what 

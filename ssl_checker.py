@@ -47,6 +47,7 @@ def argue_with_me():
     parser.add_argument('-c', '--count', type=int, help='Specify number of demo domains to generate, maximum of 10', required=False, default=5)
     parser.add_argument('-v', '--verbose', action='store_true', help='Provides detail output of the entire certificate', required=False)
     parser.add_argument('-s', '--setup', action='store_true', help='Setup or update firewall information to query URLs', required=False)
+    parser.add_argument('-n', '--name', type=str, help='Specify a single domain name to check', required=False)
     args = parser.parse_args()
     return args
 
@@ -167,6 +168,7 @@ def get_url_category(url):
             
             xml_dict = xmltodict.parse(response.text)
             result = xml_dict.get('response', {}).get('result')
+            # print(result)
             
             if result:
                 parts = result.split()
@@ -259,12 +261,16 @@ def domain_gen(count: int) -> None:
         for domain in domain_list:
             d.write(domain + '\n')
 
-def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
+def check_ssl_certificates(verbose: bool, demo: bool, count: int, single_domain: str = None) -> None:
     """
     This function checks SSL certificates of domains.
     """
     global domain_list
-    if not os.path.isfile(domains):
+    
+    # Handle single domain case
+    if single_domain:
+        domain_list = [single_domain]
+    elif not os.path.isfile(domains):
         domain_gen(count)
     elif os.path.getsize(domains) > 0:
         with open(domains, 'r') as f:
@@ -274,7 +280,8 @@ def check_ssl_certificates(verbose: bool, demo: bool, count: int) -> None:
             print(f"\n\n[i]\tDomain list is empty, creating...\n\n")
             demo = True
 
-    if demo: domain_gen(count)
+    if demo and not single_domain: 
+        domain_gen(count)
 
     firewall_connected = load_firewall_info()
 
@@ -323,8 +330,11 @@ def main():
     if args.setup:
         setup_firewall()
     
-    if load_firewall_info():
-        check_ssl_certificates(args.verbose, args.demo, args.count)
+    # Load firewall info but don't make certificate checking dependent on it
+    load_firewall_info()
+    
+    # Always check SSL certificates
+    check_ssl_certificates(args.verbose, args.demo, args.count, args.name)
 
 
 if __name__ == '__main__':
