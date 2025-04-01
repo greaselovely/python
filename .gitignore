@@ -2,7 +2,25 @@
 *.txt
 *.json
 
-
+.zones/
+.vscode/
+.DS_Store
+images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.zip
+*.tar
+*.gz
+*.tgz
+*.rar
+*.7z
+*.tar.bz2
+*.tar.xz
+*.tar.lz
+*.tar.lzo
+*.tar.lzma
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
