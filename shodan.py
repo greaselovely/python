@@ -2,9 +2,23 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from urllib.parse import urljoin
+import pyperclip
 
 # Base URL for Shodan domain lookup
 BASE_URL = "https://www.shodan.io/domain/"
+BASE_PROMPT = "Shodan AI Prompt.txt"
+
+def copy_base_prompt_to_clipboard():
+    """Read the BASE_PROMPT file and copy its contents to clipboard."""
+    try:
+        with open(BASE_PROMPT, "r", encoding="utf-8") as file:
+            prompt_content = file.read()
+        pyperclip.copy(prompt_content)
+        print(f"Base prompt copied to clipboard from {BASE_PROMPT}")
+    except FileNotFoundError:
+        print(f"Error: File '{BASE_PROMPT}' not found.")
+    except Exception as e:
+        print(f"Error reading base prompt file: {e}")
 
 def fetch_page_content(url):
     """Fetch the HTML content of a given URL."""
@@ -19,7 +33,6 @@ def fetch_page_content(url):
 def parse_dns_records(html):
     """Extracts DNS records and ports from the Shodan domain page."""
     soup = BeautifulSoup(html, "html.parser")
-    
     dns_records = []
     table_rows = soup.select("div.nine.columns table tbody tr")
     
@@ -35,11 +48,11 @@ def parse_dns_records(html):
             port_spans = cells[2].select(".ports .tag")
             for port in port_spans:
                 ports.append(port.text.strip())
-
+            
             # Remove extracted ports from value
             if ports:
                 value = value.replace("".join([port.text.strip() for port in port_spans]), "").strip()
-
+            
             record = {
                 "subdomain": subdomain if subdomain else None,
                 "type": record_type,
@@ -47,19 +60,18 @@ def parse_dns_records(html):
                 "ports": ports if ports else None  # Only add ports if present
             }
             dns_records.append(record)
-
+    
     return dns_records
 
 def parse_subdomains(html):
     """Extracts subdomains from the Shodan domain page."""
     soup = BeautifulSoup(html, "html.parser")
-    
     subdomains = []
     subdomain_list = soup.select("#subdomains li")
     
     for item in subdomain_list:
         subdomains.append(item.text.strip())
-
+    
     return subdomains
 
 def save_data(domain, dns_records, subdomains):
@@ -78,6 +90,9 @@ def save_data(domain, dns_records, subdomains):
 
 def main():
     """Main function to fetch, parse, and save domain data."""
+    # Copy base prompt to clipboard at the start
+    copy_base_prompt_to_clipboard()
+    
     domain_name = input("Enter customer domain: ").strip()
     if not domain_name:
         print("Domain cannot be empty.")
@@ -90,19 +105,19 @@ def main():
     if not html_content:
         print("Failed to retrieve page content.")
         return
-
+    
     dns_records = parse_dns_records(html_content)
     subdomains = parse_subdomains(html_content)
-
+    
     # Display extracted data
     print("\nExtracted DNS Records:")
     for record in dns_records:
         ports_display = f" Ports: {', '.join(record['ports'])}" if record['ports'] else ""
         print(f"{record['subdomain'] or '(root)'} ({record['type']}): {record['value']}{ports_display}")
-
+    
     print("\nExtracted Subdomains:")
     print(", ".join(subdomains))
-
+    
     # Save to file
     save_data(domain_name, dns_records, subdomains)
 
